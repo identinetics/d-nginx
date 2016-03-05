@@ -11,6 +11,7 @@ export NETWORKSETTINGS="
     -p 80:8080
     -p 443:8443
     --net http_proxy
+    --net-alias mdfeed.test.wpv.portalverbund.at
     --ip 10.1.1.${IMGID}
 "
 export VOLROOT="/docker_volumes/$CONTAINERNAME"  # container volumes on docker host
@@ -20,6 +21,7 @@ export VOLMAPPING="
     -v $VOLROOT/var/cache/nginx:/var/cache/nginx:Z
     -v $VOLROOT/var/log/nginx:/var/log/nginx:Z
     -v $VOLROOT/var/www:/var/www:Z
+    -v /docker_volumes/3pyffTestWpv/var/md_feed/:/var/www/mdfeedTestWpvPortalverbundAt
 "
 export STARTCMD='/start.sh'
 

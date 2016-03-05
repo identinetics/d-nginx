@@ -5,6 +5,11 @@ source $SCRIPTDIR/conf.sh
 
 useropt="-u $CONTAINERUSER"
 runopt='-d --restart=unless-stopped'
+if [ -z "$1" ]; then
+    cmd=$STARTCMD
+else
+    cmd=$@
+fi
 while getopts ":hipr" opt; do
   case $opt in
     i)
@@ -32,12 +37,6 @@ while getopts ":hipr" opt; do
 done
 
 shift $((OPTIND-1))
-
-if [ -z "$1" ]; then
-    cmd=$STARTCMD
-else
-    cmd=$@
-fi
 
 docker_run="docker run $runopt $useropt --hostname=$CONTAINERNAME --name=$CONTAINERNAME
     $ENVSETTINGS $NETWORKSETTINGS $VOLMAPPING $IMAGENAME $cmd"
