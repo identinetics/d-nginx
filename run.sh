@@ -5,15 +5,9 @@ source $SCRIPTDIR/conf.sh
 
 useropt="-u $CONTAINERUSER"
 runopt='-d --restart=unless-stopped'
-if [ -z "$1" ]; then
-    cmd=$STARTCMD
-else
-    cmd=$@
-fi
 while getopts ":hipr" opt; do
   case $opt in
     i)
-      echo "starting docker container in interactive mode"
       runopt='-it --rm'
       docker rm $CONTAINERNAME 2>/dev/null
       ;;
@@ -21,7 +15,6 @@ while getopts ":hipr" opt; do
       print="True"
       ;;
     r)
-      echo "container user is root"
       useropt='-u 0'
       ;;
     *)
@@ -38,6 +31,11 @@ done
 
 shift $((OPTIND-1))
 
+if [ -z "$1" ]; then
+    cmd=$STARTCMD
+else
+    cmd=$@
+fi
 docker_run="docker run $runopt $useropt --hostname=$CONTAINERNAME --name=$CONTAINERNAME
     $ENVSETTINGS $NETWORKSETTINGS $VOLMAPPING $IMAGENAME $cmd"
 

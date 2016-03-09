@@ -1,11 +1,19 @@
 #!/usr/bin/env bash
 
+# data shared between containers goes via these definitions:
+dockervol_root='/docker_volumes'
+shareddata_root="${dockervol_root}/1shared_data"
+
 # configure container
 export IMGID='2'  # range from 2 .. 99; must be unique
 export IMAGENAME="r2h2/nginx${IMGID}"
 export CONTAINERNAME="${IMGID}nginx"
 export CONTAINERUSER="nginx${IMGID}"   # group and user to run container
 export CONTAINERUID="800${IMGID}"   # gid and uid for CONTAINERUSER
+export BUILDARGS="
+    --build-arg USERNAME=$CONTAINERUSER \
+    --build-arg UID=$CONTAINERUID \
+"
 export ENVSETTINGS=''
 export NETWORKSETTINGS="
     -p 80:8080
@@ -14,14 +22,14 @@ export NETWORKSETTINGS="
     --net-alias mdfeed.test.wpv.portalverbund.at
     --ip 10.1.1.${IMGID}
 "
-export VOLROOT="/docker_volumes/$CONTAINERNAME"  # container volumes on docker host
+export VOLROOT="${dockervol_root}/$CONTAINERNAME"  # container volumes on docker host
 export VOLMAPPING="
-    -v $VOLROOT/etc/nginx/:/etc/nginx/:Z
-    -v $VOLROOT/etc/pki/tls/:/etc/pki/tls:Z
+    -v $VOLROOT/etc/nginx/:/etc/nginx/:roZ
+    -v $VOLROOT/etc/pki/tls/:/etc/pki/tls:roZ
     -v $VOLROOT/var/cache/nginx:/var/cache/nginx:Z
     -v $VOLROOT/var/log/nginx:/var/log/nginx:Z
     -v $VOLROOT/var/www:/var/www:Z
-    -v /docker_volumes/3pyffTestWpv/var/md_feed/:/var/www/mdfeedTestWpvPortalverbundAt
+    -v $shareddata_root/md_feed:/var/www/mdfeedTestWpvPortalverbundAt:ro
 "
 export STARTCMD='/start.sh'
 
