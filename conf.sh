@@ -24,12 +24,13 @@ export NETWORKSETTINGS="
 "
 export VOLROOT="${dockervol_root}/$CONTAINERNAME"  # container volumes on docker host
 export VOLMAPPING="
-    -v $VOLROOT/etc/nginx/:/etc/nginx/:roZ
-    -v $VOLROOT/etc/pki/tls/:/etc/pki/tls:roZ
+    -v $VOLROOT/etc/nginx/:/etc/nginx/:Z
+    -v $VOLROOT/etc/pki/tls/:/etc/pki/tls:Z
     -v $VOLROOT/var/cache/nginx:/var/cache/nginx:Z
     -v $VOLROOT/var/log/nginx:/var/log/nginx:Z
     -v $VOLROOT/var/www:/var/www:Z
-    -v $shareddata_root/md_feed:/var/www/mdfeedTestWpvPortalverbundAt:ro
+    -v $shareddata_root/testPvGvAt/md_feed:/var/www/mdfeedTestPortalverbundGvAt:ro
+    -v $shareddata_root/testWpvPvAt/md_feed:/var/www/mdfeedTestWpvPortalverbundAt:ro
 "
 export STARTCMD='/start.sh'
 
@@ -38,10 +39,7 @@ if ! id -u $CONTAINERUSER &>/dev/null; then
     groupadd -g $CONTAINERUID $CONTAINERUSER
     adduser -M -g $CONTAINERUID -u $CONTAINERUID $CONTAINERUSER
 fi
-if [ -d $VOLROOT/var/log/$CONTAINERNAME ]; then
-    mkdir -p $VOLROOT/var/log
-    chown $CONTAINERUSER:$CONTAINERUSER $VOLROOT/var/log
-fi
+
 # create dir with given user if not existing, relative to $HOSTVOLROOT; set/repair ownership
 function chkdir {
     dir=$1
