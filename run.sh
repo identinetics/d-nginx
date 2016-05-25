@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
 
-SCRIPTDIR=$(cd $(dirname $BASH_SOURCE[0]) && pwd)
-source $SCRIPTDIR/conf.sh
-
-useropt="-u $CONTAINERUSER"
-runopt='-d --restart=unless-stopped'
-while getopts ":hipr" opt; do
+while getopts ":hin:pr" opt; do
   case $opt in
     i)
       runopt='-it --rm'
-      docker rm $CONTAINERNAME 2>/dev/null
+      ;;
+    n)
+      re='^[0-9][0-9]?$'
+      if ! [[ $OPTARG =~ $re ]] ; then
+         echo "error: -n argument ($OPTARG) is not a number in the range frmom 2 .. 99" >&2; exit 1
+      fi
+      config_nr=$OPTARG
       ;;
     p)
       print="True"
@@ -17,10 +18,15 @@ while getopts ":hipr" opt; do
     r)
       useropt='-u 0'
       ;;
+    :)
+      echo "Option -$OPTARG requires an argument"
+      exit 1
+      ;;
     *)
       echo "usage: $0 [-h] [-i] [-p] [-r] [cmd]
    -h  print this help text
-   -i  start in interactive mode and remove container afterward
+   -i  start in interactive mode and remove container afterwards
+   -n  configuration number ('<NN>' in conf<NN>.sh)
    -p  print docker run command on stdout
    -r  start command as root user (default is $CONTAINERUSER)
    cmd shell command to be executed (default is $STARTCMD)"
@@ -28,9 +34,17 @@ while getopts ":hipr" opt; do
       ;;
   esac
 done
-
 shift $((OPTIND-1))
 
+SCRIPTDIR=$(cd $(dirname $BASH_SOURCE[0]) && pwd)
+source $SCRIPTDIR/conf${config_nr}.sh
+
+if [ -z "$runopt" ]; then
+    runopt='-d --restart=unless-stopped'
+fi
+if [ -z "$useropt" ]; then
+    useropt="-u $CONTAINERUSER"
+fi
 if [ -z "$1" ]; then
     cmd=$STARTCMD
 else
@@ -42,8 +56,8 @@ docker_run="docker run $runopt $useropt --hostname=$CONTAINERNAME --name=$CONTAI
 if [ $(id -u) -ne 0 ]; then
     sudo="sudo"
 fi
-${sudo} docker rm -f $CONTAINERNAME 2>/dev/null || true
+$sudo docker rm -f $CONTAINERNAME 2>/dev/null || true
 if [ "$print" = "True" ]; then
     echo $docker_run
 fi
-${sudo} $docker_run
+$sudo $docker_run

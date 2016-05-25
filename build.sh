@@ -1,25 +1,30 @@
 #!/usr/bin/env bash
 
-SCRIPTDIR=$(cd $(dirname $BASH_SOURCE[0]) && pwd)
-source $SCRIPTDIR/conf.sh
-
-if [ $(id -u) -ne 0 ]; then
-    sudo="sudo"
-fi
-
-while getopts ":hpr" opt; do
+while getopts ":hn:pr" opt; do
   case $opt in
+    n)
+      config_nr=$OPTARG
+      re='^[0-9][0-9]?$'
+      if ! [[ $OPTARG =~ $re ]] ; then
+         echo "error: -n argument is not a number in the range frmom 2 .. 99" >&2; exit 1
+      fi
+      ;;
     p)
       print="True"
       ;;
     r)
-      ${sudo} docker rmi -f $IMAGENAME 2> /dev/null || true
+      remove_img="True"
+      ;;
+    :)
+      echo "Option -$OPTARG requires an argument"
+      exit 1
       ;;
     *)
-      echo "usage: $0 [-h] [-i] [-p] [-r] [cmd]
+      echo "usage: $0 [-h] [-i] [-n] [-p] [-r] [cmd]
    -h  print this help text
+   -n  configuration number ('<NN>' in conf<NN>.sh)
    -p  print docker build command on stdout
-   -r  remove existing image $IMAGENAME (-f)
+   -r  remove existing image (-f)
    "
       exit 0
       ;;
@@ -28,9 +33,24 @@ done
 
 shift $((OPTIND-1))
 
-docker_exec="docker build $BUILDARGS -t=$IMAGENAME ."
-if [ "$print" = "True" ]; then
-    echo $docker_exec
+cd $(dirname $BASH_SOURCE[0])
+source conf${config_nr}.sh
+
+[ -e build_prepare.sh ] && ./build_prepare.sh
+
+if [ $(id -u) -ne 0 ]; then
+    sudo="sudo"
 fi
 
-${sudo} $docker_exec
+docker_build="docker build $BUILDARGS -t=$IMAGENAME ."
+if [ "$print" = "True" ]; then
+    echo $docker_build
+fi
+
+if [ "remove_img" = "True" ]; then
+    ${sudo} docker rmi -f $IMAGENAME 2> /dev/null || true
+fi
+
+${sudo} $docker_build
+
+echo "image: $IMAGENAME"
