@@ -18,8 +18,8 @@ export ENVSETTINGS=''
 export NETWORKSETTINGS="
     -p 80:8080
     -p 443:8443
-    --net http_proxy
-    --net-alias mdfeed.test.wpv.portalverbund.at
+    --net dockernet
+    --net-alias nginx.dockernet
     --ip 10.1.1.${IMGID}
 "
 export VOLROOT="${dockervol_root}/$CONTAINERNAME"  # container volumes on docker host
@@ -29,8 +29,7 @@ export VOLMAPPING="
     -v $VOLROOT/var/cache/nginx:/var/cache/nginx:Z
     -v $VOLROOT/var/log/nginx:/var/log/nginx:Z
     -v $VOLROOT/var/www:/var/www:Z
-    -v $shareddata_root/testPvGvAt/md_feed:/var/www/mdfeedTestPortalverbundGvAt:ro
-    -v $shareddata_root/testWpvPvAt/md_feed:/var/www/mdfeedTestWpvPortalverbundAt:ro
+    -v $shareddata_root/some_static_contents_root:ro
 "
 export STARTCMD='/start.sh'
 
@@ -50,3 +49,4 @@ function chkdir {
 chkdir var/cache/nginx $CONTAINERUSER
 chkdir var/log/nginx $CONTAINERUSER
 chkdir var/www $CONTAINERUSER
+chkdir shareddata_root  # might need different access rights dependent on usage!
