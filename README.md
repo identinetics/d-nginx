@@ -2,6 +2,7 @@
 
 A NGINX configuration to proxy multiple http services in other containers on the same docker host.
 Specific features of this project:
+
 1. NGINX runs as non-root user
 2. The user-defined network uses static IP addresses. Therefore NGINX will not fail on startup 
    or reload if a container is not available. (Somebody else has to check! -> Monitoring tools)
