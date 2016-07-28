@@ -1,3 +1,3 @@
 [submodule "dscripts"]
 	path = dscripts
-	url = git@github.com:identinetics/dscripts.git
+	url = https://github.com/identinetics/dscripts.git
