@@ -5,11 +5,13 @@ dockervol_root='/docker_volumes'
 shareddata_root="${dockervol_root}/01shared_data"
 
 # configure container
-export IMGID='02'  # range from 2 .. 99; must be unique
+export IMGID='02'  # range from 02 .. 99; must be unique
 export IMAGENAME="r2h2/nginx${IMGID}"
 export CONTAINERNAME="${IMGID}nginx"
 export CONTAINERUSER="nginx${IMGID}"   # group and user to run container
 export CONTAINERUID="80${IMGID}"   # gid and uid for CONTAINERUSER
+export SHARED_CONTAINERS_GROUP="sharedcont"   # group optionally shared by other containers
+export SHARED_CONTAINERS_GROUPID="8000"
 export BUILDARGS="
     --build-arg USERNAME=$CONTAINERUSER \
     --build-arg UID=$CONTAINERUID \
@@ -18,8 +20,8 @@ export ENVSETTINGS=''
 export NETWORKSETTINGS="
     -p 80:8080
     -p 443:8443
-    --net http_proxy
-    --net-alias mdfeed.test.wpv.portalverbund.at
+    --net dockernet
+    --net-alias nginx.dockernet
     --ip 10.1.1.${IMGID}
 "
 export VOLROOT="${dockervol_root}/$CONTAINERNAME"  # container volumes on docker host
@@ -32,24 +34,42 @@ export VOLMAPPING="
     -v $shareddata_root/testPvGvAt/md_feed:/var/www/mdfeedTestPortalverbundGvAt:ro
     -v $shareddata_root/testWpvPvAt/md_feed:/var/www/mdfeedTestWpvPortalverbundAt:ro
 "
-#    -v $shareddata_root/testPvGvAt/ds:/var/www/dsTestPortalverbundGvAt:ro
 
 
 export STARTCMD='/start.sh'
 
-# first create user/group/host directories if not existing
+# first start: create user/group/host directories
+if [ $(id -u) -ne 0 ]; then
+    sudo="sudo"
+fi
 if ! id -u $CONTAINERUSER &>/dev/null; then
-    groupadd -g $CONTAINERUID $CONTAINERUSER
-    adduser -M -g $CONTAINERUID -u $CONTAINERUID $CONTAINERUSER
+    $sudo groupadd -g $CONTAINERUID $CONTAINERUSER
+    $sudo groupadd -g $SHARED_CONTAINERS_GROUPID $SHARED_CONTAINERS_GROUP
+    $sudo adduser --gid $CONTAINERUID -M --uid $CONTAINERUID $CONTAINERUSER  #CentOS
+    #$sudo adduser --gid $CONTAINERUID --no-create-home --disabled-password --gecos "" --uid $CONTAINERUID $CONTAINERUSER #Debian
 fi
 
 # create dir with given user if not existing, relative to $HOSTVOLROOT; set/repair ownership
-function chkdir {
-    dir=$1
-    user=$2
-    mkdir -p "$VOLROOT/$dir"
-    chown -R $user:$user "$VOLROOT/$dir"
+function chk_own_dir() {
+    dir=$1; user=$2
+    $sudo mkdir -p "$VOLROOT/$dir"
+    $sudo chown -R $user:$user "$VOLROOT/$dir"
 }
-chkdir var/cache/nginx $CONTAINERUSER
-chkdir var/log/nginx $CONTAINERUSER
-chkdir var/www $CONTAINERUSER
+
+chk_own_dir var/cache $CONTAINERUSER
+chk_own_dir var/log $CONTAINERUSER
+chk_own_dir var/www $CONTAINERUSER
+
+# as above, but for shared dir
+function chk_shared_dir() {
+    dir=$1; user=$2; group=$3
+    $sudo mkdir -p "$shareddata_root/$dir"
+    $sudo chown -R $user:$group "$shareddata_root/$dir"
+}
+
+chk_shared_dir 'testEduPvAt' $CONTAINERUSER $SHARED_CONTAINERS_GROUP
+
+# fix permissions
+$sudo chown -R $CONTAINERUSER:$CONTAINERUSER $VOLROOT/etc
+$sudo chmod -R 600 $VOLROOT/etc/pki/tls/private/
+$sudo chmod 700 $VOLROOT/etc/pki/tls/private
