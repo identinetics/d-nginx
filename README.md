@@ -17,6 +17,8 @@ any time without loss of data, because data is stored on mounted volumes.
 2. Copy conf.sh.default to confXX.sh, where XX is a unique container number on the docker host
 3. Run `git submodule init` and `git submodule update`
 4. Modify confXX.sh
+5. Configure /etc/nginx (see also example install/nginx.conf for TLS and logformat settings)
+
 
 ## Usage
 
