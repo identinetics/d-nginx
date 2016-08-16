@@ -16,7 +16,8 @@ MAINTAINER Rainer Hörbe <r2h2@hoerbe.at>
 # Compile and install NGINX with NAXSI enabled using /opt/nginx
 ENV NGINX_VERSION nginx-1.8.1
 ENV NAXSI_VERSION 0.54
-RUN yum install -y gcc httpd-devel pcre perl pcre-devel zlib zlib-devel
+RUN yum -y install bind-utils curl iproute lsof mlocate net-tools telnet unzip wget which \
+ && yum install -y gcc httpd-devel pcre perl pcre-devel zlib zlib-devel
 WORKDIR /usr/local/src
 RUN wget http://nginx.org/download/$NGINX_VERSION.tar.gz \
  && tar -xpzf $NGINX_VERSION.tar.gz \
