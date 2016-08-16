@@ -2,6 +2,9 @@ FROM centos:centos7
 MAINTAINER Rainer Hörbe <r2h2@hoerbe.at>
 # derived from https://github.com/nginxinc/docker-nginx/blob/master/stable/centos7/Dockerfile
 
+# General admin tools
+RUN yum -y install bind-utils curl iproute lsof mlocate net-tools openssl telnet unzip wget which
+
 #install RPM into CENTOS default paths (does not include naxsi as of 1.8.1)
 #ENV NGINX_VERSION 1.8.1-1.el7.ngx
 #COPY install/nginx.repo /etc/yum.repos.d/nginx.repo
@@ -16,15 +19,13 @@ MAINTAINER Rainer Hörbe <r2h2@hoerbe.at>
 # Compile and install NGINX with NAXSI enabled using /opt/nginx
 ENV NGINX_VERSION nginx-1.8.1
 ENV NAXSI_VERSION 0.54
-RUN yum -y install bind-utils curl iproute lsof mlocate net-tools openssl telnet unzip wget which \
- && yum install -y gcc httpd-devel pcre perl pcre-devel zlib zlib-devel
+RUN yum install -y gcc httpd-devel openssl-devel pcre perl pcre-devel zlib zlib-devel
 WORKDIR /usr/local/src
 RUN wget http://nginx.org/download/$NGINX_VERSION.tar.gz \
  && tar -xpzf $NGINX_VERSION.tar.gz \
  && rm $NGINX_VERSION.tar.gz \
  && wget https://github.com/nbs-system/naxsi/archive/$NAXSI_VERSION.tar.gz \
- && tar -xvzf $NAXSI_VERSION.tar.gz \
- && mv $NAXSI_VERSION naxsi-$NAXSI_VERSION
+ && tar -xvzf $NAXSI_VERSION.tar.gz
 WORKDIR /usr/local/src/$NGINX_VERSION/
 
 RUN ./configure --conf-path=/opt/etc/nginx.conf \
