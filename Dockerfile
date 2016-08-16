@@ -2,7 +2,7 @@ FROM centos:centos7
 MAINTAINER Rainer Hörbe <r2h2@hoerbe.at>
 # derived from https://github.com/nginxinc/docker-nginx/blob/master/stable/centos7/Dockerfile
 
-#install RPM into CENTOS default paths
+#install RPM into CENTOS default paths (does not include naxsi as of 1.8.1)
 #ENV NGINX_VERSION 1.8.1-1.el7.ngx
 #COPY install/nginx.repo /etc/yum.repos.d/nginx.repo
 #RUN rpm --import https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-7 \
@@ -16,18 +16,19 @@ MAINTAINER Rainer Hörbe <r2h2@hoerbe.at>
 # Compile and install NGINX with NAXSI enabled using /opt/nginx
 ENV NGINX_VERSION nginx-1.8.1
 ENV NAXSI_VERSION 0.54
-RUN yum -y install bind-utils curl iproute lsof mlocate net-tools telnet unzip wget which \
+RUN yum -y install bind-utils curl iproute lsof mlocate net-tools openssl telnet unzip wget which \
  && yum install -y gcc httpd-devel pcre perl pcre-devel zlib zlib-devel
 WORKDIR /usr/local/src
 RUN wget http://nginx.org/download/$NGINX_VERSION.tar.gz \
  && tar -xpzf $NGINX_VERSION.tar.gz \
  && rm $NGINX_VERSION.tar.gz \
  && wget https://github.com/nbs-system/naxsi/archive/$NAXSI_VERSION.tar.gz \
- && tar -xvzf $NAXSI_VERSION.tar.gz
+ && tar -xvzf $NAXSI_VERSION.tar.gz \
+ && mv $NAXSI_VERSION naxsi-$NAXSI_VERSION
 WORKDIR /usr/local/src/$NGINX_VERSION/
 
 RUN ./configure --conf-path=/opt/etc/nginx.conf \
-                --add-module=/usr/local/$NAXSI_VERSION/naxsi_src/ \
+                --add-module=/usr/local/src/naxsi-$NAXSI_VERSION/naxsi_src/ \
                 --error-log-path=/var/log/nginx/error.log \
                 --http-client-body-temp-path=/usr/local/nginx/body \
                 --http-fastcgi-temp-path=/usr/local/nginx/fastcgi \
