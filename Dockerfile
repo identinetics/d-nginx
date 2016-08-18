@@ -28,19 +28,19 @@ RUN wget http://nginx.org/download/$NGINX_VERSION.tar.gz \
  && tar -xvzf $NAXSI_VERSION.tar.gz
 WORKDIR /usr/local/src/$NGINX_VERSION/
 
-RUN ./configure --conf-path=/opt/etc/nginx.conf \
-                --add-module=/usr/local/src/naxsi-$NAXSI_VERSION/naxsi_src/ \
-                --error-log-path=/var/log/nginx/error.log \
-                --http-client-body-temp-path=/usr/local/nginx/body \
-                --http-fastcgi-temp-path=/usr/local/nginx/fastcgi \
+RUN ./configure --prefix=/usr/local/nginx \
                 --http-log-path=/var/log/nginx/access.log \
-                --http-proxy-temp-path=/usr/local/nginx/proxy \
-                --lock-path=/var/lock/nginx.lock \
-                --pid-path=/var/run/nginx.pid \
+                --error-log-path=/var/log/nginx/error.log \
+                --http-client-body-temp-path=/var/lib/nginx/body \
+                --http-fastcgi-temp-path=/var/lib/nginx/fastcgi \
+                --http-proxy-temp-path=/var/lib/nginx/proxy \
+                --lock-path=/var/log/nginx.lock \
+                --pid-path=/opt/var/log/nginx.pid \
+                --add-module=/usr/local/src/naxsi-$NAXSI_VERSION/naxsi_src/ \
                 --with-http_ssl_module --with-http_realip_module \
                 --without-mail_pop3_module --without-mail_smtp_module \
                 --without-mail_imap_module --without-http_uwsgi_module \
-                --without-http_scgi_module --with-ipv6 --prefix=/usr/local/nginx \
+                --without-http_scgi_module --with-ipv6 \
                 --with-http_gunzip_module --with-http_gzip_static_module \
                 --with-cc-opt='-O2 -g -pipe -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic'
 
