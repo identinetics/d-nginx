@@ -28,7 +28,7 @@ export VOLROOT="${dockervol_root}/$CONTAINERNAME"  # container volumes on docker
 export VOLMAPPING="
     -v $VOLROOT/etc/nginx/:/etc/nginx/:Z
     -v $VOLROOT/etc/pki/tls/:/etc/pki/tls:Z
-    -v $VOLROOT/var/cache/nginx:/var/cache/nginx:Z
+    -v $VOLROOT/var/lib/nginx:/var/lib/nginx:Z
     -v $VOLROOT/var/log/nginx:/var/log/nginx:Z
     -v $VOLROOT/var/www:/var/www:Z
     -v $shareddata_root/testPvGvAt/md_feed:/var/www/mdfeedTestPortalverbundGvAt:ro
@@ -56,7 +56,9 @@ function chk_own_dir() {
     $sudo chown -R $user:$user "$VOLROOT/$dir"
 }
 
-chk_own_dir var/cache $CONTAINERUSER
+chk_own_dir etc/nginx $CONTAINERUSER
+chk_own_dir etc/pki $CONTAINERUSER
+chk_own_dir var/lib $CONTAINERUSER
 chk_own_dir var/log $CONTAINERUSER
 chk_own_dir var/www $CONTAINERUSER
 
@@ -69,7 +71,6 @@ function chk_shared_dir() {
 
 chk_shared_dir 'testEduPvAt' $CONTAINERUSER $SHARED_CONTAINERS_GROUP
 
-# fix permissions
-$sudo chown -R $CONTAINERUSER:$CONTAINERUSER $VOLROOT/etc
+# fix private key permissions
 $sudo chmod -R 600 $VOLROOT/etc/pki/tls/private/
 $sudo chmod 700 $VOLROOT/etc/pki/tls/private
