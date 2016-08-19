@@ -5,6 +5,12 @@ MAINTAINER Rainer Hörbe <r2h2@hoerbe.at>
 # General admin tools
 RUN yum -y install bind-utils curl iproute lsof mlocate net-tools openssl telnet unzip wget which
 
+# Application will run as a non-root uid/gid that must map to the docker host
+ARG USERNAME=nginx
+ARG UID=1001
+RUN groupadd --gid $UID $USERNAME \
+ && useradd --gid $UID --uid $UID $USERNAME
+
 #install RPM into CENTOS default paths (does not include naxsi as of 1.8.1)
 #ENV NGINX_VERSION 1.8.1-1.el7.ngx
 #COPY install/nginx.repo /etc/yum.repos.d/nginx.repo
@@ -43,18 +49,9 @@ RUN ./configure --prefix=/usr/local/nginx \
                 --without-http_scgi_module --with-ipv6 \
                 --with-http_gunzip_module --with-http_gzip_static_module \
                 --with-cc-opt='-O2 -g -pipe -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic'
-
-
 RUN make && make install
 
-
-# Application will run as a non-root user/group that must map to the docker host
-ARG USERNAME=nginx
-ARG UID=1001
-RUN groupadd --gid $UID $USERNAME \
- && useradd --gid $UID --uid $UID $USERNAME \
- && chown $USERNAME:$USERNAME /var/run
-
+COPY install/opt /
 COPY install/scripts/*.sh /
 RUN chmod +x /*.sh
 CMD /start.sh
