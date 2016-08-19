@@ -51,7 +51,7 @@ RUN ./configure --prefix=/usr/local/nginx \
                 --with-cc-opt='-O2 -g -pipe -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic'
 RUN make && make install
 
-COPY install/opt /
+COPY install/opt /opt
 COPY install/scripts/*.sh /
 RUN chmod +x /*.sh
 CMD /start.sh
