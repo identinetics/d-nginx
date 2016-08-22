@@ -52,7 +52,8 @@ RUN ./configure --prefix=/usr/local/nginx \
 RUN make && make install
 
 COPY install/opt /opt
-RUN chown $USERNAME:$USERNAME /opt/nginx_test/var/log/
+RUN mkdir -p /var/log/nginx/ /var/lib/nginx/ \
+ && chown $USERNAME:$USERNAME /var/log/nginx/ /var/lib/nginx/ /opt/nginx_test/
 COPY install/scripts/*.sh /
 RUN chmod +x /*.sh
 CMD /start.sh
