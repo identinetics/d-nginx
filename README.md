@@ -1,4 +1,4 @@
-# NGINX docker image using static network addresses for stable reverse proxy config 
+# NGINX docker image with naxsi support and static network addresses for stable reverse proxy config 
 
 A NGINX configuration to proxy multiple http services in other containers on the same docker host.
 Specific features of this project:
@@ -18,11 +18,12 @@ any time without loss of data, because data is stored on mounted volumes.
 3. Run `git submodule init` and `git submodule update`
 4. Modify confXX.sh
 5. Configure /etc/nginx (see also example install/nginx.conf for TLS and logformat settings)
-
+6. Configure naxsi rules accoring to https://github.com/nbs-system/naxsi/wi
 
 ## Usage
 
     dscript/build.sh
     dscript/run.sh [-p] # start nginx in daemon mode
     dscript/run.sh -ir  # start interactive bash as root user  
+    dscript/run.sh -i /start_test.sh  # run test configuration with sample naxsi rules  
     dscript/exec.sh -i  # open a second shell
