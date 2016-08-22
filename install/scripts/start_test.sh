@@ -5,7 +5,7 @@ echo "starting nginx in daemon mode"
 
 cd /opt/nginx_test/var/log/
 
-echo "HEAD http://localhost:8080/index.html?xyz=testnaxsitest"
+echo "GET http://localhost:8080/index.html?xyz=testnaxsitest"
 curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8080/index.html?xyz=testnaxsitest
 
 echo "GET http://localhost:8080/index.html?abc=--&def=--"
