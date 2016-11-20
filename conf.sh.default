@@ -24,6 +24,14 @@ export NETWORKSETTINGS="
     --net-alias nginx.dockernet
     --ip 10.1.1.${IMGID}
 "
+# create network if not exists
+docker network ls | grep dockernet
+if (( "$?" != 0 )); then
+    echo 'Creating network "dockernet"'
+    docker network create --driver bridge --subnet=10.1.1.0/24
+        -o com.docker.network.bridge.name=br-dockernet dockernet
+fi
+
 export VOLROOT="${dockervol_root}/$CONTAINERNAME"  # container volumes on docker host
 export VOLMAPPING="
     -v $VOLROOT/etc/nginx/:/etc/nginx/:Z
