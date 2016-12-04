@@ -1,84 +1,168 @@
 #!/usr/bin/env bash
 
-dockervol_root='/docker_volumes'
-# data shared between containers:
-shareddata_root="${dockervol_root}/01shared_data"
+# settings for docker build, run and exec
 
-# configure container
-export IMGID='02'  # range from 02 .. 99; must be unique
-export IMAGENAME="r2h2/nginx${IMGID}"
-export CONTAINERNAME="${IMGID}nginx"
-export CONTAINERUSER="nginx${IMGID}"   # group and user to run container
-export CONTAINERUID="80${IMGID}"   # gid and uid for CONTAINERUSER
-export SHARED_CONTAINERS_GROUP="sharedcont"   # group optionally shared by other containers
-export SHARED_CONTAINERS_GROUPID="8000"
-export BUILDARGS="
-    --build-arg USERNAME=$CONTAINERUSER \
-    --build-arg UID=$CONTAINERUID \
-"
-export ENVSETTINGS=''
-export NETWORKSETTINGS="
-    -p 80:8080
-    -p 443:8443
-    --net dockernet
-    --net-alias nginx.dockernet
-    --ip 10.1.1.${IMGID}
-"
-# create network if not exists
-docker network ls | grep dockernet
-if (( "$?" != 0 )); then
-    echo 'Creating network "dockernet"'
-    docker network create --driver bridge --subnet=10.1.1.0/24
-        -o com.docker.network.bridge.name=br-dockernet dockernet
-fi
-
-export VOLROOT="${dockervol_root}/$CONTAINERNAME"  # container volumes on docker host
-export VOLMAPPING="
-    -v $VOLROOT/etc/nginx/:/etc/nginx/:Z
-    -v $VOLROOT/etc/pki/tls/:/etc/pki/tls:Z
-    -v $VOLROOT/var/lib/nginx:/var/lib/nginx:Z
-    -v $VOLROOT/var/log/nginx:/var/log/nginx:Z
-    -v $VOLROOT/var/www:/var/www:Z
-    -v $shareddata_root/testPvGvAt/md_feed:/var/www/mdfeedTestPortalverbundGvAt:ro
-    -v $shareddata_root/testWpvPvAt/md_feed:/var/www/mdfeedTestWpvPortalverbundAt:ro
-"
-
-
-export STARTCMD='/start.sh'
-
-# first start: create user/group/host directories
-if [ $(id -u) -ne 0 ]; then
-    sudo="sudo"
-fi
-if ! id -u $CONTAINERUSER &>/dev/null; then
-    $sudo groupadd -g $CONTAINERUID $CONTAINERUSER
-    $sudo groupadd -g $SHARED_CONTAINERS_GROUPID $SHARED_CONTAINERS_GROUP
-    $sudo adduser --gid $CONTAINERUID -M --uid $CONTAINERUID $CONTAINERUSER  #CentOS
-    #$sudo adduser --gid $CONTAINERUID --no-create-home --disabled-password --gecos "" --uid $CONTAINERUID $CONTAINERUSER #Debian
-fi
-
-# create dir with given user if not existing, relative to $HOSTVOLROOT; set/repair ownership
-function chk_own_dir() {
-    dir=$1; user=$2
-    $sudo mkdir -p "$VOLROOT/$dir"
-    $sudo chown -R $user:$user "$VOLROOT/$dir"
+main() {
+  init_sudo
+  set_volume_mapping
+  set_image_and_container_name
+  set_users
+  set_buildargs
+  set_run_args
+  set_network
+  set_vol_mapping
+  #enable_x11_client
+  #enablet_pkcs11
+  #enable_sshd()     # usually used only for debugging - requires installed sshd in image
 }
 
-chk_own_dir etc/nginx $CONTAINERUSER
-chk_own_dir etc/pki $CONTAINERUSER
-chk_own_dir var/lib $CONTAINERUSER
-chk_own_dir var/log $CONTAINERUSER
-chk_own_dir var/www $CONTAINERUSER
 
-# as above, but for shared dir
-function chk_shared_dir() {
-    dir=$1; user=$2; group=$3
-    $sudo mkdir -p "$shareddata_root/$dir"
-    $sudo chown -R $user:$group "$shareddata_root/$dir"
+set_volume_mapping() {
+    DOCKERVOL_ROOT='/docker_volumes'
+    SHAREDDATA_ROOT="${DOCKERVOL_ROOT}/01shared_data"    # data shared between containers
 }
 
-chk_shared_dir 'testEduPvAt' $CONTAINERUSER $SHARED_CONTAINERS_GROUP
 
-# fix private key permissions
-$sudo chmod -R 600 $VOLROOT/etc/pki/tls/private/
-$sudo chmod 700 $VOLROOT/etc/pki/tls/private
+set_image_and_container_name() {
+    # This IMGID qualifies image, container, user and IP adddress; this is helpful for managing
+    # processes on the docker host etc.
+    IMGID='02'  # range from 02 .. 99; must be unique per node
+    PROJSHORT='nginx'
+    export IMAGENAME="r2h2/$PROJSHORT${IMGID}"
+    export CONTAINERNAME="${IMGID}$PROJSHORT"
+}
+
+
+set_users() {
+    export CONTAINERUSER="$PROJSHORT${IMGID}"   # group and user to run container
+    export CONTAINERUID="80${IMGID}"     # gid and uid for CONTAINERUSER
+    export SHARED_CONTAINERS_GROUP="sharedcont"   # group shared by other containers
+    export SHARED_CONTAINERS_GROUPID="8000"
+    export START_AS_ROOT=      # 'True' (e.g. for apache to fall back to www user)
+}
+
+
+set_buildargs() {
+    export BUILDARGS="
+        --build-arg USERNAME=$CONTAINERUSER
+        --build-arg UID=$CONTAINERUID
+    "
+}
+
+
+set_run_args() {
+    export ENVSETTINGS="
+        -e LOGDIR=/var/log
+        -e LOGLEVEL=INFO
+    "
+    export STARTCMD='/start.sh'  # unset or blank to use image default
+}
+
+
+set_network() {
+    # The docker0 bridge has dynamic addresses, whereas a custom bridge allows predictable addresses
+    NETWORK=dockernet
+    set +e  # errexit off
+    $sudo docker network ls | awk '{print $2}' | grep $NETWORK > /dev/null
+    if (( $? == 1)); then
+        $sudo docker network create --driver bridge --subnet=10.1.1.0/24 \
+                  -o com.docker.network.bridge.name=br-$NETWORK $NETWORK
+    fi
+    export NETWORKSETTINGS="
+        --net $NETWORK
+        --net-alias mdfeed.test.wpv.portalverbund.at
+        --ip 10.1.1.${IMGID}
+        -p 80:8080
+        -p 443:8443
+    "
+}
+
+
+set_vol_mapping() {
+    create_containeruser $CONTAINERUSER $CONTAINERUID
+
+    export VOLROOT="${DOCKERVOL_ROOT}/$CONTAINERNAME"  # container volumes on docker host
+    export VOLMAPPING="
+        -v $VOLROOT/etc/nginx/:/etc/nginx/:ro
+        -v $VOLROOT/etc/pki/tls/:/etc/pki/tls:ro
+        -v $VOLROOT/var/lib/nginx:/var/lib/nginx:Z
+        -v $VOLROOT/var/log:/var/log/nginx:Z
+        -v $VOLROOT/var/www:/var/www:Z
+        -v $shareddata_root/03pyffTestWpv/md_feed:/var/www/mdfeedTestWpvPortalverbundAt:ro
+        -v $shareddata_root/03pyffTestWpv/md_source/split:/var/www/mdsourceTestWpvPortalverbundAt:ro
+    "
+
+    # check if required read-only directories do exist (path relative to $VOLROOT)
+    chkdir etc/nginx
+    chkdir etc/pki/tls
+
+    # create if not existing; set owner for path on docker host relative to $VOLROOT
+    createdir var/log $CONTAINERUID
+    createdir var/lib/nginx $CONTAINERUID
+    createdir var/www $CONTAINERUID
+
+    $sudo mkdir -p $SHAREDDATA_ROOT/$CONTAINERNAME/www/
+    $sudo chown -R $CONTAINERUSER:$SHARED_CONTAINERS_GROUP $SHAREDDATA_ROOT/$CONTAINERNAME/www/
+}
+
+
+create_user() {
+    A_USERNAME=$1;A_UID=$2
+    # first start: create user/group/host directories
+    if ! id -u $A_USERNAME &>/dev/null; then
+        if [[ ${OSTYPE//[0-9.]/} == 'darwin' ]]; then  # OSX
+                $sudo sudo dseditgroup -o create -i $A_UID $A_USERNAME
+                $sudo dscl . create /Users/$A_USERNAME UniqueID $A_UID
+                $sudo dscl . create /Users/$A_USERNAME PrimaryGroupID $A_UID
+        else  # Linux
+          source /etc/os-release
+          case $ID in
+            centos|fedora|rhel)
+                $sudo groupadd --non-unique -g $A_UID $A_USERNAME || true
+                $sudo adduser --non-unique -M --gid $A_UID --comment "" --uid $A_UID $A_USERNAME
+                ;;
+            debian|ubuntu)
+                $sudo groupadd -g $A_UID $A_USERNAME
+                $sudo adduser --gid $A_UID --no-create-home --disabled-password --gecos "" --uid $A_UID $A_USERNAME
+                ;;
+            *)
+                echo "do not know how to add user/group for OS ${OSTYPE} ${NAME}"
+                ;;
+          esac
+        fi
+    fi
+}
+
+
+init_sudo() {
+    if [ $(id -u) -ne 0 ]; then
+        sudo="sudo"
+    fi
+}
+
+chkdir() {
+    if [[ "${1:0:1}" == / ]]; then
+        dir=$1  # absolute path
+    else
+        dir=$VOLROOT/$1
+    fi
+    if [ ! -e "$dir" ]; then
+        echo "$0: Missing directory: $dir"
+        exit 1
+    fi
+}
+
+
+createdir() {
+    if [[ "${1:0:1}" == / ]]; then
+        dir=$1  # absolute path
+    else
+        dir=$VOLROOT/$1
+    fi
+    user=$2
+    $sudo mkdir -p $dir
+    $sudo chown -R $user:$user $dir
+}
+
+
+main
