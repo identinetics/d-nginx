@@ -1,13 +1,15 @@
 FROM centos:centos7
-MAINTAINER Rainer Hörbe <r2h2@hoerbe.at>
-# derived from https://github.com/nginxinc/docker-nginx/blob/master/stable/centos7/Dockerfile
+LABEL maintainer="Rainer Hörbe <r2h2@hoerbe.at>" \
+      version="0.2.0" \
+      capabilites='--cap-drop=all'
 
 # General admin tools
-RUN yum -y install bind-utils curl iproute lsof mlocate net-tools openssl telnet unzip wget which
+RUN yum -y install bind-utils curl iproute lsof mlocate net-tools openssl telnet unzip wget which \
+ && yum clean all
 
 # Application will run as a non-root uid/gid that must map to the docker host
 ARG USERNAME=nginx
-ARG UID=1001
+ARG UID=343002
 RUN groupadd --gid $UID $USERNAME \
  && useradd --gid $UID --uid $UID $USERNAME
 
@@ -25,7 +27,8 @@ RUN groupadd --gid $UID $USERNAME \
 # Compile and install NGINX with NAXSI enabled using /opt/nginx
 ENV NGINX_VERSION nginx-1.8.1
 ENV NAXSI_VERSION 0.54
-RUN yum install -y gcc httpd-devel openssl-devel pcre perl pcre-devel zlib zlib-devel
+RUN yum install -y gcc httpd-devel openssl-devel pcre perl pcre-devel zlib zlib-devel \
+ && yum clean all
 WORKDIR /usr/local/src
 RUN wget http://nginx.org/download/$NGINX_VERSION.tar.gz \
  && tar -xpzf $NGINX_VERSION.tar.gz \
@@ -49,7 +52,7 @@ RUN ./configure --prefix=/usr/local/nginx \
                 --without-http_scgi_module --with-ipv6 \
                 --with-http_gunzip_module --with-http_gzip_static_module \
                 --with-cc-opt='-O2 -g -pipe -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic'
-RUN make && make install
+RUN make && make install && make clean
 
 COPY install/opt /opt
 RUN mkdir -p /var/log/nginx/ /var/lib/nginx/ \
@@ -57,3 +60,11 @@ RUN mkdir -p /var/log/nginx/ /var/lib/nginx/ \
 COPY install/scripts/*.sh /
 RUN chmod +x /*.sh
 CMD /start.sh
+
+VOLUME /etc/nginx
+VOLUME /etc/pki/tls
+VOLUME /var/lib/nginx
+VOLUME /var/log/nginx
+VOLUME /var/www         # copy static content here
+
+
