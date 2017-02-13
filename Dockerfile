@@ -61,21 +61,23 @@ COPY install/scripts/*.sh /
 RUN chmod +x /*.sh
 CMD /start.sh
 
-VOLUME /etc/nginx \
-       /etc/pki/tls \
-       /var/www         # copy static content here
-
 # === Let's Encrypt ===
 RUN yum -y install epel-release \
  && yum -y install certbot \
  && yum clean all
 RUN mkdir -p /etc/letsencrypt /var/log/letsencrypt/ /var/lib/letsencrypt /var/www/letsencrypt/ \
  && chown -R $USERNAME:$USERNAME /etc/letsencrypt /var/log/letsencrypt/ /var/lib/letsencrypt /var/www/letsencrypt/
-VOLUME /etc/letsencrypt
+
 # future: install certbot nginx plugin (experimental as of 2017-02-13)
 #RUN curl --silent --show-error --retry 5 "https://bootstrap.pypa.io/get-pip.py" | python \
 # && yum -y install gcc python-devel \
 # && pip install -U letsencrypt-nginx
 
-VOLUME /var/lib/ \
-       /var/log/
+# Note: use /etc/pki/tls for manually obtained certs; letsencrypt uses /etc/letsencrypt/live
+
+VOLUME /etc/nginx \
+       /etc/pki/tls \
+       /etc/letsencrypt \
+       /var/lib/ \
+       /var/log/ \
+       /var/www         # copy static content here

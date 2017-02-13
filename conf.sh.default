@@ -89,6 +89,7 @@ set_vol_mapping() {
     map_docker_volume "${CONTAINERNAME}.etc_pki_tls" '/etc/pki/tls' 'ro' $DOCKERVOL_ROOT
     map_docker_volume "${CONTAINERNAME}.var_lib" '/var/lib' 'Z' $DOCKERLOG_ROOT
     map_docker_volume "${CONTAINERNAME}.var_log" '/var/log' 'Z' $DOCKERLOG_ROOT
+    map_docker_volume "${CONTAINERNAME}.var_www" '/var/www' 'Z' $DOCKERLOG_ROOT
 
     create_user $CONTAINERUSER $CONTAINERUID
     map_host_directory "$SHAREDDATA_ROOT/10pyfftestpvgvat/md_feed" '/var/www/mdfeedTestPortalverbundGvAt' 'ro'
