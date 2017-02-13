@@ -6,7 +6,8 @@ Specific features of this project:
 1. NGINX runs as non-root user
 2. The user-defined network uses static IP addresses. Therefore NGINX will not fail on startup 
    or reload if a container is not available. (Somebody else has to check! -> Monitoring tools)
-3. Image is based on centos7     
+3. Image is based on centos7
+4. Obtain certificates from Let's Encrypt
 
 The image produces immutable containers, i.e. a container can be removed and re-created
 any time without loss of data, because data is stored on mounted volumes.
@@ -14,9 +15,9 @@ any time without loss of data, because data is stored on mounted volumes.
 ## Configuration
 
 1. Clone this repository
-2. Copy conf.sh.default to confXX.sh, where XX is a unique container number on the docker host
-3. Run `git submodule init` and `git submodule update`
-4. Modify confXX.sh
+2. Copy or symlink conf.sh.default to conf.sh
+3. Run `git submodule update --init`
+4. Optionally modify conf.sh
 5. Configure /etc/nginx (see also example install/nginx.conf for TLS and logformat settings)
 6. Configure naxsi rules accoring to https://github.com/nbs-system/naxsi/wi
 
@@ -27,3 +28,21 @@ any time without loss of data, because data is stored on mounted volumes.
     dscript/run.sh -ir  # start interactive bash as root user  
     dscript/run.sh -i /start_test.sh  # run test configuration with sample naxsi rules  
     dscript/exec.sh -i  # open a second shell
+
+## Letsencrypt Certs
+
+### Add certificate
+
+    # insert into nginx server config:
+    location /.well-known {   # letsencrypt certbot  
+      root /var/www/letsencrypt/wwwExampleOrg;
+      allow all;
+    }
+
+    mkdir -p /var/www/letsencrypt/wwwExampleOrg/.well-known
+    # the webroot plugin requires a running web server: first start with an old/dummy cert; then certbot then change cert
+    certbot certonly -a webroot --webroot-path=/var/www/letsencrypt/wwwExampleOrg/ -d www.example.org
+    
+### Renew
+    
+    certbot renew
