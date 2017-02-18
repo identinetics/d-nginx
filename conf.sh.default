@@ -94,9 +94,7 @@ set_vol_mapping() {
     map_docker_volume "${CONTAINERNAME}.var_lib" '/var/lib' 'Z' $DOCKERVOL_SHORT
     map_docker_volume "${CONTAINERNAME}.var_log" '/var/log' 'Z' $DOCKERLOG_SHORT
     map_docker_volume "${CONTAINERNAME}.var_www" '/var/www' 'Z' $DOCKERVOL_SHORT
-
-	chown -R nginx${IMGID}:nginx${IMGID} $DOCKER_VOLUME_ROOT/${IMGID}nginx.*
-
+	chown -R $CONTAINERUSER:$CONTAINERUSER $DOCKER_VOLUME_ROOT/${CONTAINERNAME}.*
 }
 
 
