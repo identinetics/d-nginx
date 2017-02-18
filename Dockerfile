@@ -80,4 +80,5 @@ VOLUME /etc/nginx \
        /etc/letsencrypt \
        /var/lib/ \
        /var/log/ \
-       /var/www         # copy static content here
+       /var/www
+# copy static content into /var/www
