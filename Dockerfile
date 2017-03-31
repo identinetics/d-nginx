@@ -1,7 +1,7 @@
 FROM centos:centos7
 LABEL maintainer="Rainer Hörbe <r2h2@hoerbe.at>" \
       version="0.2.0" \
-      capabilites='--cap-drop=all'
+      capabilities='--cap-drop=all'
 
 # General admin tools
 RUN yum -y install bind-utils curl iproute lsof mlocate net-tools openssl telnet unzip wget which \
@@ -64,7 +64,9 @@ CMD /start.sh
 # === Let's Encrypt ===
 RUN yum -y install epel-release \
  && yum -y install certbot \
- && yum clean all
+ && yum clean all \
+ # fix yum cleanup problem
+ && rm -rf /var/cache/yum/ /var/lib/rpm/__db*
 RUN mkdir -p /etc/letsencrypt /var/log/letsencrypt/ /var/lib/letsencrypt /var/www/letsencrypt/ \
  && chown -R $USERNAME:$USERNAME /etc/letsencrypt /var/log/letsencrypt/ /var/lib/letsencrypt /var/www/letsencrypt/
 
