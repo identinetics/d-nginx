@@ -33,15 +33,22 @@ any time without loss of data, because data is stored on mounted volumes.
 
 ### Add certificate
 
-    # insert into nginx server config:
+Configure vhost in server.d with HTTP only and make sure it will run. 
+Insert into nginx server config:
+
     location /.well-known {   # letsencrypt certbot  
       root /var/www/letsencrypt/wwwExampleOrg;
       allow all;
     }
+    
+Then run:
 
-    mkdir -p /var/www/letsencrypt/wwwExampleOrg/.well-known
-    # the webroot plugin requires a running web server: first start with an old/dummy cert; then certbot then change cert
-    certbot certonly -a webroot --webroot-path=/var/www/letsencrypt/wwwExampleOrg/ -d www.example.org
+    fqdn=www.example.com
+    mkdir -p /var/www/letsencrypt/$fqdn/.well-known
+    certbot certonly -a webroot --webroot-path=/var/www/letsencrypt/$fqdn/ -d $fqdn
+
+Enable https and restart Nginx
+
     
 ### Renew
     
