@@ -36,6 +36,7 @@ set_image_and_container_name() {
     # processes on the docker host etc.
     IMGID='02'  # range from 02 .. 99; must be unique per node
     PROJSHORT='nginx'
+    SERVICEDESCRIPTION=loadbalancer
     export IMAGENAME="r2h2/$PROJSHORT${IMGID}"
     export CONTAINERNAME="${IMGID}$PROJSHORT"
 }

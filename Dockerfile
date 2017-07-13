@@ -25,7 +25,7 @@ RUN groupadd --gid $UID $USERNAME \
 # && ln -sf /dev/stderr /var/log/nginx/error.log
 
 # Compile and install NGINX with NAXSI enabled using /opt/nginx
-ENV NGINX_VERSION nginx-1.8.1
+ENV NGINX_VERSION nginx-1.12.1
 ENV NAXSI_VERSION 0.54
 RUN yum install -y gcc httpd-devel openssl-devel pcre perl pcre-devel zlib zlib-devel \
  && yum clean all
@@ -55,8 +55,8 @@ RUN ./configure --prefix=/usr/local/nginx \
 RUN make && make install && make clean
 
 COPY install/opt /opt
-RUN mkdir -p /var/log/nginx/ /var/lib/nginx/ \
- && chown -R $USERNAME:$USERNAME /var/log/nginx/ /var/lib/nginx/ /opt/nginx_test/
+RUN mkdir -p /var/log/nginx/ /var/lib/nginx/ /opt/var/log/ \
+ && chown -R $USERNAME:$USERNAME /var/log/nginx/ /var/lib/nginx/ /opt/nginx_test/ /opt/var/log/
 COPY install/scripts/*.sh /
 RUN chmod +x /*.sh
 CMD /start.sh
