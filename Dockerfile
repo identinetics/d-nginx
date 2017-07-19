@@ -4,7 +4,8 @@ LABEL maintainer="Rainer Hörbe <r2h2@hoerbe.at>" \
       capabilities='--cap-drop=all'
 
 # General admin tools
-RUN yum -y install bind-utils curl iproute lsof mlocate net-tools openssl telnet unzip wget which \
+RUN yum -y update \
+ && yum -y install bind-utils curl iproute lsof mlocate net-tools openssl telnet unzip wget which \
  && yum clean all
 
 # Application will run as a non-root uid/gid that must map to the docker host

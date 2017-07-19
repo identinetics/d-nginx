@@ -16,7 +16,7 @@ any time without loss of data, because data is stored on mounted volumes.
 
 1. Clone this repository
 2. Copy or symlink conf.sh.default to conf.sh
-3. Run `git submodule update --init`
+3. Run `git submodule update --init && cd dscripts && git checkout master && cd -`
 4. Optionally modify conf.sh
 5. Configure /etc/nginx (see also example install/nginx.conf for TLS and logformat settings)
 6. Configure naxsi rules accoring to https://github.com/nbs-system/naxsi/wi
