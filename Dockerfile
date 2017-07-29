@@ -1,11 +1,11 @@
 FROM centos:centos7
 LABEL maintainer="Rainer Hörbe <r2h2@hoerbe.at>" \
-      version="0.2.0" \
+      version="0.2.1" \
       capabilities='--cap-drop=all'
 
 # General admin tools
 RUN yum -y update \
- && yum -y install bind-utils curl iproute lsof mlocate net-tools openssl telnet unzip wget which \
+ && yum -y install bind-utils curl iproute lsof mlocate net-tools openssl strace telnet unzip wget which \
  && yum clean all
 
 # Application will run as a non-root uid/gid that must map to the docker host
@@ -85,3 +85,5 @@ VOLUME /etc/nginx \
        /var/log/ \
        /var/www
 # copy static content into /var/www
+
+EXPOSE 8080 8443
