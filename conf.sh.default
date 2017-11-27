@@ -11,6 +11,7 @@ main() {
     _set_users
     _set_buildargs
     _set_run_args
+    _set_logfiles
 }
 
 
@@ -102,19 +103,13 @@ setup_vol_mapping() {
     map_docker_volume $mode "${CONTAINERNAME}.var_log" '/var/log' 'Z' $DOCKERLOG_SHORT
     map_docker_volume $mode "${CONTAINERNAME}.var_www" '/var/www' 'Z' $DOCKERVOL_SHORT
     if [[ ! $JENKINS_HOME ]]; then
-		chown -R $CONTAINERUSER:$CONTAINERUSER $DOCKER_VOLUME_ROOT/${CONTAINERNAME}.*
+        chown -R $CONTAINERUSER:$CONTAINERUSER $DOCKER_VOLUME_ROOT/${CONTAINERNAME}.*
     fi
-    
-    # the list of logfiles is required for the manage.sh/multitail command
-    export LOGFILES="
-        $DOCKERLOG_SHORT/${CONTAINERNAME}.var_log/nginx/access.log
-        $DOCKERLOG_SHORT/${CONTAINERNAME}.var_log/nginx/main_error.log
-    "
 }
 
 
 _set_logfiles () {
-    export LOGFILES="
+    export KNOWN_LOGFILES="
         ${DOCKERLOG_SHORT}/${CONTAINERNAME}.var_log/nginx/access.log
         ${DOCKERLOG_SHORT}/${CONTAINERNAME}.var_log/nginx/main_error.log
     "
