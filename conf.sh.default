@@ -113,6 +113,14 @@ setup_vol_mapping() {
 }
 
 
+_set_logfiles () {
+    export LOGFILES="
+        ${DOCKERLOG_SHORT}/${CONTAINERNAME}.var_log/nginx/access.log
+        ${DOCKERLOG_SHORT}/${CONTAINERNAME}.var_log/nginx/main_error.log
+    "
+}
+
+
 container_status() {
     $sudo docker ps | head -1
     $sudo docker ps --all | egrep $CONTAINERNAME\$
