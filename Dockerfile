@@ -87,3 +87,4 @@ VOLUME /etc/nginx \
 # copy static content into /var/www
 
 EXPOSE 8080 8443
+USER $USERNAME
