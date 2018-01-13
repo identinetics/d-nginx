@@ -82,8 +82,8 @@ VOLUME /etc/nginx \
        /etc/pki/tls \
        /etc/letsencrypt \
        /var/lib/ \
-       /var/log/ \
-       /var/www
+       /var/log/
+
 # copy static content into /var/www
 
 EXPOSE 8080 8443
