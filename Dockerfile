@@ -1,11 +1,11 @@
 FROM centos:centos7
 LABEL maintainer="Rainer Hörbe <r2h2@hoerbe.at>" \
-      version="0.2.1" \
       capabilities='--cap-drop=all'
 
 # General admin tools
 RUN yum -y update \
  && yum -y install bind-utils curl iproute lsof mlocate net-tools openssl strace telnet unzip wget which \
+ && yum -y install epel-release \
  && yum clean all
 
 # Application will run as a non-root uid/gid that must map to the docker host
@@ -26,8 +26,8 @@ RUN groupadd --gid $UID $USERNAME \
 # && ln -sf /dev/stderr /var/log/nginx/error.log
 
 # Compile and install NGINX with NAXSI enabled using /opt/nginx
-ENV NGINX_VERSION nginx-1.12.1
-ENV NAXSI_VERSION 0.54
+ENV NGINX_VERSION nginx-1.15.0
+ENV NAXSI_VERSION 0.55
 RUN yum install -y gcc httpd-devel openssl-devel pcre perl pcre-devel zlib zlib-devel \
  && yum clean all
 WORKDIR /usr/local/src
@@ -35,7 +35,8 @@ RUN wget http://nginx.org/download/$NGINX_VERSION.tar.gz \
  && tar -xpzf $NGINX_VERSION.tar.gz \
  && rm $NGINX_VERSION.tar.gz \
  && wget https://github.com/nbs-system/naxsi/archive/$NAXSI_VERSION.tar.gz \
- && tar -xvzf $NAXSI_VERSION.tar.gz
+ && tar -xvzf $NAXSI_VERSION.tar.gz \
+ && rm $NAXSI_VERSION.tar.gz
 WORKDIR /usr/local/src/$NGINX_VERSION/
 
 RUN ./configure --prefix=/usr/local/nginx \
@@ -63,8 +64,7 @@ RUN chmod +x /*.sh
 CMD /start.sh
 
 # === Let's Encrypt ===
-RUN yum -y install epel-release \
- && yum -y install certbot \
+RUN yum -y install certbot \
  && yum clean all \
  # fix yum cleanup problem
  && rm -rf /var/cache/yum/ /var/lib/rpm/__db*
@@ -85,6 +85,14 @@ VOLUME /etc/nginx \
        /var/log/
 
 # copy static content into /var/www
+
+# require py3 for manifest generation
+RUN yum -y install python34  \
+ && yum clean all && rm -rf /var/cache/yum \
+ && curl https://bootstrap.pypa.io/get-pip.py | python3.4 \
+ && mkdir -p $HOME/.config/pip \
+ && printf "[global]\ndisable-pip-version-check = True\n" > $HOME/.config/pip/pip.conf
+COPY install/opt/bin/manifest2.sh /opt/bin/manifest2.sh
 
 EXPOSE 8080 8443
 USER $USERNAME

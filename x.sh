@@ -8,10 +8,10 @@ main() {
     init_sudo
     _set_volume_root
     _set_image_and_container_name
-    _set_users
-    _set_buildargs
-    _set_run_args
-    _set_logfiles
+    #_set_users
+    #_set_buildargs
+    #_set_run_args
+    #_set_logfiles
 }
 
 
