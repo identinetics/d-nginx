@@ -2,10 +2,10 @@ pipeline {
     agent any
     options { disableConcurrentBuilds() }
     parameters {
-        string(defaultValue: 'True', description: '"true"=initial cleanup: remove container and volumes; otherwise leave empty', name: 'start_clean')
+        //string(defaultValue: 'True', description: '"true"=initial cleanup: remove container and volumes; otherwise leave empty', name: 'start_clean')
         string(defaultValue: '', description: '"true"=Force "docker build --nocache"; otherwise leave empty', name: 'nocache')
         string(defaultValue: '', description: '"true"=push docker image after build; otherwise leave empty', name: 'pushimage')
-        string(defaultValue: '', description: '"true"=keep running after test; otherwise leave empty to delete container and volumes', name: 'keep_running')
+        //string(defaultValue: '', description: '"true"=keep running after test; otherwise leave empty to delete container and volumes', name: 'keep_running')
         string(description: '"true"=overwrite default docker registry user; otherwise leave empty', name: 'docker_registry_user')
         string(description: '"true"=overwrite default docker registry host; otherwise leave empty', name: 'docker_registry_host')
     }
@@ -44,7 +44,7 @@ pipeline {
             }
         }
     }
-    post {
+    /* post {
         always {
             echo 'container status'
             sh './dscripts/manage.sh status'
@@ -58,5 +58,5 @@ pipeline {
                 fi
             '''
         }
-    }
+    } */
 }
