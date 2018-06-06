@@ -74,14 +74,14 @@ pipeline {
     post {
         always {
             echo 'container status'
-            sh './dscripts/manage.sh -n39 status'
+            sh './dscripts/manage.sh status'
             echo 'Remove container, volumes'
             sh '''
                 if [[ "$keep_running" ]]; then
                    echo "Keep container running"
                 else
-                    ./dscripts/manage.sh -n39 rm 2>/dev/null || true
-                    ./dscripts/manage.sh -n39 rmvol 2>/dev/null || true
+                    ./dscripts/manage.sh rm 2>/dev/null || true
+                    ./dscripts/manage.sh rmvol 2>/dev/null || true
                 fi
             '''
         }

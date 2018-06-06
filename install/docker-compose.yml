@@ -1,0 +1,34 @@
+version: "2"
+services:
+  nginx:
+    image: docker.io/rhoerbe/nginx:pr
+    container_name: 02nginx
+    hostname: 02nginx
+    labels:
+      x.service: "loadbalancer"
+    restart: unless-stopped
+    environment:
+      - LOGDIR=/var/log
+      - LOGLEVEL=INFO  
+    ports:
+      - "80:8080"
+      - "443:8443"
+    networks:
+      dockernet:
+        ipv4_address: 10.1.1.2
+    volumes:
+      - 02nginx.etc_letsencrypt:/etc/letsencrypt:Z 
+      - 02nginx.etc_nginx:/etc/nginx:ro 
+      - 02nginx.var_log:/var/log:Z 
+      - 02nginx.var_www:/var/www:Z 
+    cap_drop:
+      - ALL
+networks:
+  dockernet:
+    external: true
+volumes:
+  02nginx.etc_letsencrypt:
+  02nginx.etc_nginx:
+  02nginx.var_log:
+  02nginx.var_www:
+       
