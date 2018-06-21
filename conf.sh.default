@@ -104,8 +104,8 @@ setup_vol_mapping() {
 
     map_docker_volume $mode "${CONTAINERNAME}.etc_letsencrypt" '/etc/letsencrypt' 'Z' $DOCKERVOL_SHORT
     map_docker_volume $mode "${CONTAINERNAME}.etc_nginx" '/etc/nginx' 'ro' $DOCKERVOL_SHORT
-    map_docker_volume $mode "${CONTAINERNAME}.etc_pki_tls" '/etc/pki/tls' 'ro' $DOCKERVOL_SHORT
-    map_docker_volume $mode "${CONTAINERNAME}.var_lib" '/var/lib' 'Z' $DOCKERVOL_SHORT
+    #map_docker_volume $mode "${CONTAINERNAME}.etc_pki_tls" '/etc/pki/tls' 'ro' $DOCKERVOL_SHORT
+    #map_docker_volume $mode "${CONTAINERNAME}.var_lib" '/var/lib' 'Z' $DOCKERVOL_SHORT
     map_docker_volume $mode "${CONTAINERNAME}.var_log" '/var/log' 'Z' $DOCKERLOG_SHORT
     map_docker_volume $mode "${CONTAINERNAME}.var_www" '/var/www' 'Z' $DOCKERVOL_SHORT
     if [[ ! $JENKINS_HOME ]]; then

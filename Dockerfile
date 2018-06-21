@@ -79,9 +79,7 @@ RUN mkdir -p /etc/letsencrypt /var/log/letsencrypt/ /var/lib/letsencrypt /var/ww
 # Note: use /etc/pki/tls for manually obtained certs; letsencrypt uses /etc/letsencrypt/live
 
 VOLUME /etc/nginx \
-       /etc/pki/tls \
        /etc/letsencrypt \
-       /var/lib/ \
        /var/log/
 
 # copy static content into /var/www
