@@ -1,4 +1,4 @@
-FROM intra/centos:7
+FROM intra/centos7_py34_base
 LABEL maintainer="Rainer Hörbe <r2h2@hoerbe.at>" \
       capabilities='--cap-drop=all'
 
@@ -85,10 +85,7 @@ VOLUME /etc/nginx \
 # copy static content into /var/www
 
 # require py3 for manifest generation
-RUN yum -y install python34  \
- && yum clean all && rm -rf /var/cache/yum \
- && curl https://bootstrap.pypa.io/get-pip.py | python3.4 \
- && mkdir -p $HOME/.config/pip \
+RUN mkdir -p $HOME/.config/pip \
  && printf "[global]\ndisable-pip-version-check = True\n" > $HOME/.config/pip/pip.conf
 COPY install/opt/bin/manifest2.sh /opt/bin/manifest2.sh
 
