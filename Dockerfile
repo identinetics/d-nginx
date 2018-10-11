@@ -1,6 +1,5 @@
 FROM intra/centos7_py34_base
-LABEL maintainer="Rainer Hörbe <r2h2@hoerbe.at>" \
-      capabilities='--cap-drop=all'
+LABEL maintainer="Rainer Hörbe <r2h2@hoerbe.at>"
 
 # General admin tools
 RUN yum -y update \
@@ -26,8 +25,8 @@ RUN groupadd --gid $UID $USERNAME \
 # && ln -sf /dev/stderr /var/log/nginx/error.log
 
 # Compile and install NGINX with NAXSI enabled using /opt/nginx
-ENV NGINX_VERSION nginx-1.15.0
-ENV NAXSI_VERSION 0.55
+ENV NGINX_VERSION nginx-1.15.5
+ENV NAXSI_VERSION 0.56
 RUN yum install -y gcc httpd-devel openssl-devel pcre perl pcre-devel zlib zlib-devel \
  && yum clean all
 WORKDIR /usr/local/src
@@ -67,20 +66,16 @@ CMD /start.sh
 RUN yum -y install certbot \
  && yum clean all \
  # fix yum cleanup problem
- && rm -rf /var/cache/yum/ /var/lib/rpm/__db*
+ && rm -rf /var/cache/yum/ /var/lib/rpm/__db* /var/log/lastlog /var/log/yum.log
 RUN mkdir -p /etc/letsencrypt /var/log/letsencrypt/ /var/lib/letsencrypt /var/www/letsencrypt/ \
  && chown -R $USERNAME:$USERNAME /etc/letsencrypt /var/log/letsencrypt/ /var/lib/letsencrypt /var/www/letsencrypt/
-
-# future: install certbot nginx plugin (experimental as of 2017-02-13)
-#RUN curl --silent --show-error --retry 5 "https://bootstrap.pypa.io/get-pip.py" | python \
-# && yum -y install gcc python-devel \
-# && pip install -U letsencrypt-nginx
 
 # Note: use /etc/pki/tls for manually obtained certs; letsencrypt uses /etc/letsencrypt/live
 
 VOLUME /etc/nginx \
        /etc/letsencrypt \
-       /var/log/
+       /var/log \
+       /var/www
 
 # copy static content into /var/www
 
