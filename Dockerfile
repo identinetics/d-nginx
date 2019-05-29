@@ -1,4 +1,4 @@
-FROM intra/centos7_py34_base
+FROM intra/centos7_py36_base
 LABEL maintainer="Rainer Hörbe <r2h2@hoerbe.at>"
 
 # General admin tools
@@ -25,7 +25,7 @@ RUN groupadd --gid $UID $USERNAME \
 # && ln -sf /dev/stderr /var/log/nginx/error.log
 
 # Compile and install NGINX with NAXSI enabled using /opt/nginx
-ENV NGINX_VERSION nginx-1.15.5
+ENV NGINX_VERSION nginx-1.17.0
 ENV NAXSI_VERSION 0.56
 RUN yum install -y gcc httpd-devel openssl-devel pcre perl pcre-devel zlib zlib-devel \
  && yum clean all
@@ -47,6 +47,7 @@ RUN ./configure --prefix=/usr/local/nginx \
                 --lock-path=/var/log/nginx.lock \
                 --pid-path=/opt/var/log/nginx.pid \
                 --add-module=/usr/local/src/naxsi-$NAXSI_VERSION/naxsi_src/ \
+                --with-debug \
                 --with-http_ssl_module --with-http_realip_module \
                 --without-mail_pop3_module --without-mail_smtp_module \
                 --without-mail_imap_module --without-http_uwsgi_module \
