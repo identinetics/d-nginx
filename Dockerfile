@@ -25,7 +25,7 @@ RUN groupadd --gid $UID $USERNAME \
 # && ln -sf /dev/stderr /var/log/nginx/error.log
 
 # Compile and install NGINX with NAXSI enabled using /opt/nginx
-ENV NGINX_VERSION nginx-1.17.0
+ENV NGINX_VERSION nginx-1.17.1
 ENV NAXSI_VERSION 0.56
 RUN yum install -y gcc httpd-devel openssl-devel pcre perl pcre-devel zlib zlib-devel \
  && yum clean all
