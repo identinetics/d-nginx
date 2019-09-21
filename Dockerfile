@@ -1,10 +1,12 @@
-FROM intra/centos7_py36_base
+#FROM intra/centos7_py36_base
+FROM intra/ubi8-py36
 LABEL maintainer="Rainer Hörbe <r2h2@hoerbe.at>"
 
 # General admin tools
+USER root
 RUN yum -y update \
- && yum -y install bind-utils curl iproute lsof mlocate net-tools openssl strace telnet unzip wget which \
- && yum -y install epel-release \
+ #&& yum -y install bind-utils curl iproute lsof mlocate net-tools openssl strace telnet unzip wget which \
+ #&& yum -y install epel-release \
  && yum clean all
 
 # Application will run as a non-root uid/gid that must map to the docker host
@@ -64,11 +66,9 @@ RUN chmod +x /*.sh
 CMD /start.sh
 
 # === Let's Encrypt ===
-RUN yum -y install certbot \
- && yum clean all \
- # fix yum cleanup problem
- && rm -rf /var/cache/yum/ /var/lib/rpm/__db* /var/log/lastlog /var/log/yum.log
-RUN mkdir -p /etc/letsencrypt /var/log/letsencrypt/ /var/lib/letsencrypt /var/www/letsencrypt/ \
+# currently no repo/rpm for certbot on RHEL8 -> pip
+RUN python -m pip install certbot \
+ && mkdir -p /etc/letsencrypt /var/log/letsencrypt/ /var/lib/letsencrypt /var/www/letsencrypt/ \
  && chown -R $USERNAME:$USERNAME /etc/letsencrypt /var/log/letsencrypt/ /var/lib/letsencrypt /var/www/letsencrypt/
 
 # Note: use /etc/pki/tls for manually obtained certs; letsencrypt uses /etc/letsencrypt/live

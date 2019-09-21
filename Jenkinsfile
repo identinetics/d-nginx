@@ -38,8 +38,9 @@ pipeline {
                     [[ "$nocache" ]] && nocacheopt='-c' && echo 'build with option nocache'
                     export MANIFEST_SCOPE='local'
                     export PROJ_HOME='.'
-                     ./dcshell/build -f dc.yaml $nocacheopt
-                    echo "=== build completed with rc $?"
+                    source $VIRTUAL_ENV
+                    export PATH=$PATH:$VIRTUAL_ENV/bin
+                    ./dcshell/build -f dc.yaml $nocacheopt
                 '''
             }
         }
@@ -66,7 +67,6 @@ pipeline {
                 else
                     echo 'Remove container, volumes'
                     docker-compose -f dc.yaml rm --force -v 2>/dev/null || true
-                    docker rm --force -v shibsp 2>/dev/null || true  # in case docker-compose fails ..
                 fi
             '''
         }
