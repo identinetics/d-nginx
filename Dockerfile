@@ -1,6 +1,5 @@
-#FROM intra/centos7_py36_base
-FROM intra/ubi8-py36
-LABEL maintainer="Rainer Hörbe <r2h2@hoerbe.at>"
+FROM intra/centos8_py36_base
+#FROM intra/ubi8-py36
 
 # General admin tools
 USER root
