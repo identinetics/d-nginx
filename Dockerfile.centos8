@@ -1,11 +1,13 @@
-FROM intra/centos7_py36_base
-LABEL maintainer="Rainer Hörbe <r2h2@hoerbe.at>"
+# Broken when buildin with `docker build`. Follwing statment in cantos:8 container is OK
+
+FROM intra/centos8_py36_base
+#FROM intra/ubi8-py36
 
 # General admin tools
-RUN yum -y update \
- && yum -y install bind-utils curl iproute lsof mlocate net-tools openssl strace telnet unzip wget which \
- && yum -y install epel-release \
- && yum clean all
+USER root
+RUN dnf -y update \
+ #&& dnf -y install bind-utils curl iproute lsof mlocate net-tools openssl strace telnet unzip wget which \
+ && dnf clean all
 
 # Application will run as a non-root uid/gid that must map to the docker host
 ARG USERNAME=nginx
@@ -15,20 +17,21 @@ RUN groupadd --gid $UID $USERNAME \
 
 #install RPM into CENTOS default paths (does not include naxsi as of 1.8.1)
 #ENV NGINX_VERSION 1.8.1-1.el7.ngx
-#COPY install/nginx.repo /etc/yum.repos.d/nginx.repo
+#COPY install/nginx.repo /etc/dnf.repos.d/nginx.repo
 #RUN rpm --import https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-7 \
-# && yum -y install bind-utils curl iproute lsof mlocate net-tools telnet unzip which
+# && dnf -y install bind-utils curl iproute lsof mlocate net-tools telnet unzip which
 # && rpm --import http://nginx.org/keys/nginx_signing.key \
-# && yum -y install ca-certificates nginx-${NGINX_VERSION} gettext \
-# && yum clean all \
+# && dnf -y install ca-certificates nginx-${NGINX_VERSION} gettext \
+# && dnf clean all \
 # && ln -sf /dev/stdout /var/log/nginx/access.log \
 # && ln -sf /dev/stderr /var/log/nginx/error.log
 
 # Compile and install NGINX with NAXSI enabled using /opt/nginx
-ENV NGINX_VERSION nginx-1.17.1
+ENV NGINX_VERSION nginx-1.17.8
 ENV NAXSI_VERSION 0.56
-RUN yum install -y gcc httpd-devel openssl-devel pcre perl pcre-devel zlib zlib-devel \
- && yum clean all
+RUN dnf install -y gcc httpd-devel \
+ && dnf install -y openssl-devel pcre perl pcre-devel zlib zlib-devel \
+ && dnf clean all
 WORKDIR /usr/local/src
 RUN wget http://nginx.org/download/$NGINX_VERSION.tar.gz \
  && tar -xpzf $NGINX_VERSION.tar.gz \
@@ -64,11 +67,9 @@ RUN chmod +x /*.sh
 CMD /start.sh
 
 # === Let's Encrypt ===
-RUN yum -y install certbot \
- && yum clean all \
- # fix yum cleanup problem
- && rm -rf /var/cache/yum/ /var/lib/rpm/__db* /var/log/lastlog /var/log/yum.log
-RUN mkdir -p /etc/letsencrypt /var/log/letsencrypt/ /var/lib/letsencrypt /var/www/letsencrypt/ \
+# currently no repo/rpm for certbot on RHEL8 -> pip
+RUN python -m pip install certbot \
+ && mkdir -p /etc/letsencrypt /var/log/letsencrypt/ /var/lib/letsencrypt /var/www/letsencrypt/ \
  && chown -R $USERNAME:$USERNAME /etc/letsencrypt /var/log/letsencrypt/ /var/lib/letsencrypt /var/www/letsencrypt/
 
 # Note: use /etc/pki/tls for manually obtained certs; letsencrypt uses /etc/letsencrypt/live
