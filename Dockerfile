@@ -3,10 +3,10 @@ FROM intra/centos8_py36_base
 
 # General admin tools
 USER root
-RUN yum -y update \
- #&& yum -y install bind-utils curl iproute lsof mlocate net-tools openssl strace telnet unzip wget which \
- #&& yum -y install epel-release \
- && yum clean all
+RUN dnf -y update \
+ #&& dnf -y install bind-utils curl iproute lsof mlocate net-tools openssl strace telnet unzip wget which \
+ #&& dnf -y install epel-release \
+ && dnf clean all
 
 # Application will run as a non-root uid/gid that must map to the docker host
 ARG USERNAME=nginx
@@ -16,20 +16,21 @@ RUN groupadd --gid $UID $USERNAME \
 
 #install RPM into CENTOS default paths (does not include naxsi as of 1.8.1)
 #ENV NGINX_VERSION 1.8.1-1.el7.ngx
-#COPY install/nginx.repo /etc/yum.repos.d/nginx.repo
+#COPY install/nginx.repo /etc/dnf.repos.d/nginx.repo
 #RUN rpm --import https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-7 \
-# && yum -y install bind-utils curl iproute lsof mlocate net-tools telnet unzip which
+# && dnf -y install bind-utils curl iproute lsof mlocate net-tools telnet unzip which
 # && rpm --import http://nginx.org/keys/nginx_signing.key \
-# && yum -y install ca-certificates nginx-${NGINX_VERSION} gettext \
-# && yum clean all \
+# && dnf -y install ca-certificates nginx-${NGINX_VERSION} gettext \
+# && dnf clean all \
 # && ln -sf /dev/stdout /var/log/nginx/access.log \
 # && ln -sf /dev/stderr /var/log/nginx/error.log
 
 # Compile and install NGINX with NAXSI enabled using /opt/nginx
-ENV NGINX_VERSION nginx-1.17.1
+ENV NGINX_VERSION nginx-1.17.8
 ENV NAXSI_VERSION 0.56
-RUN yum install -y gcc httpd-devel openssl-devel pcre perl pcre-devel zlib zlib-devel \
- && yum clean all
+RUN dnf install -y gcc httpd-devel \
+ && dnf install -y openssl-devel pcre perl pcre-devel zlib zlib-devel \
+ && dnf clean all
 WORKDIR /usr/local/src
 RUN wget http://nginx.org/download/$NGINX_VERSION.tar.gz \
  && tar -xpzf $NGINX_VERSION.tar.gz \
