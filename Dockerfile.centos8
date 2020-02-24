@@ -11,7 +11,7 @@ RUN dnf -y update \
 
 # Application will run as a non-root uid/gid that must map to the docker host
 ARG USERNAME=nginx
-ARG UID=343002
+ARG UID=3402
 RUN groupadd --gid $UID $USERNAME \
  && useradd --gid $UID --uid $UID $USERNAME
 

@@ -9,7 +9,7 @@ RUN yum -y update \
 
 # Application will run as a non-root uid/gid that must map to the docker host
 ARG USERNAME=nginx
-ARG UID=343002
+ARG UID=3002
 RUN groupadd --gid $UID $USERNAME \
  && useradd --gid $UID --uid $UID $USERNAME
 
@@ -25,7 +25,7 @@ RUN groupadd --gid $UID $USERNAME \
 # && ln -sf /dev/stderr /var/log/nginx/error.log
 
 # Compile and install NGINX with NAXSI enabled using /opt/nginx
-ENV NGINX_VERSION nginx-1.17.1
+ENV NGINX_VERSION nginx-1.17.8
 ENV NAXSI_VERSION 0.56
 RUN yum install -y gcc httpd-devel openssl-devel pcre perl pcre-devel zlib zlib-devel \
  && yum clean all
