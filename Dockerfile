@@ -7,12 +7,6 @@ RUN yum -y update \
  && yum -y install epel-release \
  && yum clean all
 
-# Application will run as a non-root uid/gid that must map to the docker host
-ARG USERNAME=nginx
-ARG UID=3002
-RUN groupadd --gid $UID $USERNAME \
- && useradd --gid $UID --uid $UID $USERNAME
-
 #install RPM into CENTOS default paths (does not include naxsi as of 1.8.1)
 #ENV NGINX_VERSION 1.8.1-1.el7.ngx
 #COPY install/nginx.repo /etc/yum.repos.d/nginx.repo
@@ -57,8 +51,7 @@ RUN ./configure --prefix=/usr/local/nginx \
 RUN make && make install && make clean
 
 COPY install/opt /opt
-RUN mkdir -p /var/log/nginx/ /var/lib/nginx/ /opt/var/log/ \
- && chown -R $USERNAME:$USERNAME /var/log/nginx/ /var/lib/nginx/ /opt/nginx_test/ /opt/var/log/
+RUN mkdir -p /var/log/nginx/ /var/lib/nginx/ /opt/var/log/
 COPY install/scripts/*.sh /
 RUN chmod +x /*.sh
 CMD /start.sh
@@ -68,8 +61,7 @@ RUN yum -y install certbot \
  && yum clean all \
  # fix yum cleanup problem
  && rm -rf /var/cache/yum/ /var/lib/rpm/__db* /var/log/lastlog /var/log/yum.log
-RUN mkdir -p /etc/letsencrypt /var/log/letsencrypt/ /var/lib/letsencrypt /var/www/letsencrypt/ \
- && chown -R $USERNAME:$USERNAME /etc/letsencrypt /var/log/letsencrypt/ /var/lib/letsencrypt /var/www/letsencrypt/
+RUN mkdir -p /etc/letsencrypt /var/log/letsencrypt/ /var/lib/letsencrypt /var/www/letsencrypt/
 
 # Note: use /etc/pki/tls for manually obtained certs; letsencrypt uses /etc/letsencrypt/live
 
@@ -86,4 +78,3 @@ RUN mkdir -p $HOME/.config/pip \
 COPY install/opt/bin/manifest2.sh /opt/bin/manifest2.sh
 
 EXPOSE 8080 8443
-USER $USERNAME
